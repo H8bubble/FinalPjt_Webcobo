@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# 컴파일 결과물
+*.class
+
+# RSA 키 파일 (개인키 절대 업로드 금지)
+*.key
+*_public.key
+*_private.key
+
+# 평가 시스템 실행 결과물
+*.enc
+*.bin
+hash_*.txt
+submit_meta_*.txt
+evaluation_*.txt
+
+# Eclipse / IDE
+.classpath
+.project
+.settings/
+bin/
+.idea/
+*.iml
+
+# 로컬 임시 파일
+*.log
+*.tmp
