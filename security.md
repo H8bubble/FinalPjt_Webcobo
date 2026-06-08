@@ -87,11 +87,11 @@ return cipher.doFinal(data);
 **After**
 ```java
 byte[] iv = new byte[IV_SIZE];
-new SecureRandom().nextBytes(iv);                 // 매번 무작위 IV
+new SecureRandom().nextBytes(iv);                 
 Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
 byte[] cipherText = cipher.doFinal(data);
-// 결과 = [IV(16) || 암호문]
+
 ```
 **검증**: 동일 평가 내용을 두 번 암호화하면 암호문이 서로 다름 + 제출→열람 왕복 정상.
 
