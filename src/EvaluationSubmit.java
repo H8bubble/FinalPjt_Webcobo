@@ -223,9 +223,7 @@ public class EvaluationSubmit {
 		String newRecord = studentId + "|"
 		+ course + "|"
 		+ team + "|"
-		+ target + "|"
-		+ submitNo + "|"
-		+ submittedAt + "\n";
+		+ target + "\n";
 		
 		String oldContent = "";
 		
