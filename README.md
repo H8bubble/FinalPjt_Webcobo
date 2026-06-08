@@ -46,8 +46,9 @@ java EvaluationRead
 | `hash_001.txt` | 암호화된 평가 데이터의 SHA-256 해시 |
 | `signature_001.bin` | 학생 전자서명 |
 | `submit_meta_001.txt` | 제출 메타데이터 (익명 ID, 과목명, 팀, 제출시간) |
+| `submitted_records.txt` | 중복 제출 검증용 텍스트 파일 (학생 ID, 과목명, 팀, 평가 대상) |
 
 ## 보안 주의
 
 - `*_private.key` 파일은 개인키이므로 **절대 저장소에 포함하지 않는다** (`.gitignore` 등록됨)
-- 실행 결과로 생성되는 `.enc`, `.bin`, `.key`, `hash_*.txt`, `submit_meta_*.txt` 도 모두 gitignore 처리됨
+- 실행 결과로 생성되는 `.enc`, `.bin`, `.key`, `hash_*.txt`, `submit_meta_*.txt`, `submitted_records.txt` 도 모두 gitignore 처리됨
