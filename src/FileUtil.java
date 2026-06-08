@@ -1,47 +1,36 @@
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 // 파일 읽기/쓰기 유틸리티 클래스
 public class FileUtil {
 
-    // byte[] 데이터를 파일에 저장
+    // byte[] 데이터를 파일에 저장 (자원 자동 해제는 Files API가 처리)
     public static void saveBytes(String filename, byte[] data) throws IOException {
-        FileOutputStream fos = new FileOutputStream(filename);
-        fos.write(data);
-        fos.close();
+        Files.write(Paths.get(filename), data);
     }
 
-    // 파일에서 byte[] 데이터를 읽어 옴
+    // 파일에서 byte[] 데이터를 모두 읽어 옴 (부분 읽기 방지)
     public static byte[] readBytes(String filename) throws IOException {
-        File file = new File(filename);
-        FileInputStream fis = new FileInputStream(file);
-        byte[] data = new byte[(int) file.length()];
-        fis.read(data);
-        fis.close();
-        return data;
+        return Files.readAllBytes(Paths.get(filename));
     }
 
-    // 문자열을 파일에 저장
+    // 문자열을 파일에 저장 (UTF-8)
     public static void saveString(String filename, String content) throws IOException {
-        FileWriter fw = new FileWriter(filename);
-        fw.write(content);
-        fw.close();
+        Files.write(Paths.get(filename), content.getBytes(StandardCharsets.UTF_8));
     }
 
-    // 파일에서 문자열을 읽어 옴 (줄바꿈 유지)
+    // 파일에서 문자열을 읽어 옴 (UTF-8, 앞뒤 공백/줄바꿈 정리)
     public static String readString(String filename) throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(filename));
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null) {
-            sb.append(line).append("\n");
-        }
-        br.close();
-        return sb.toString().trim();
+        byte[] data = Files.readAllBytes(Paths.get(filename));
+        return new String(data, StandardCharsets.UTF_8).trim();
+    }
+
+    // 파일 존재 여부 확인
+    public static boolean exists(String filename) {
+        Path path = Paths.get(filename);
+        return Files.exists(path);
     }
 }
