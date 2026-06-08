@@ -63,8 +63,7 @@ public class EvaluationSubmit {
         int score = readScore(scanner); // 1~5 범위 정수 검증
         System.out.print("서술형 평가 입력: ");
         String comment = scanner.nextLine();
-        System.out.print("증빙자료 파일명 입력: ");
-        String evidence = scanner.nextLine().trim();
+        String evidence = readEvidenceFileName(scanner);
 
         Date now = new Date();
         String submittedAt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(now);
@@ -134,8 +133,6 @@ public class EvaluationSubmit {
             + "submittedAt=" + submittedAt;
         FileUtil.saveString("submit_meta_" + submitNo + ".txt", meta);
 
-        byte[] studentPubBytes = FileUtil.readBytes("student_public.key");
-        FileUtil.saveBytes("student_public_" + submitNo + ".key", studentPubBytes);
         saveSubmitRecord(studentId, course, team, target, submitNo, submittedAt);
         
         System.out.println("[7] 서버 저장 완료");
@@ -254,5 +251,49 @@ public class EvaluationSubmit {
         }
 
         return false;
+    }
+    
+    // 증빙자료 제출 여부와 파일 존재 여부 확인
+    private static String readEvidenceFileName(Scanner scanner) {
+        while (true) {
+            System.out.print("증빙자료를 제출하시겠습니까? (Y/N): ");
+            String answer = scanner.nextLine().trim();
+
+            if (answer.equalsIgnoreCase("N")) {
+                System.out.println("증빙자료 없이 제출을 진행합니다.");
+                return "";
+            }
+
+            if (answer.equalsIgnoreCase("Y")) {
+                while (true) {
+                    System.out.print("증빙자료 파일명 입력: ");
+                    String evidence = scanner.nextLine().trim();
+
+                    if (evidence.isEmpty()) {
+                        System.out.println("파일명을 입력하지 않았습니다.");
+                    } else if (FileUtil.exists(evidence)) {
+                        System.out.println("증빙자료 파일 확인 완료: " + evidence);
+                        return evidence;
+                    } else {
+                        System.out.println("해당 파일을 찾을 수 없습니다: " + evidence);
+                    }
+
+                    while (true) {
+                        System.out.print("다시 입력하시겠습니까? (Y/N): ");
+                        String retry = scanner.nextLine().trim();
+
+                        if (retry.equalsIgnoreCase("Y")) {
+                            break;
+                        }
+                        if (retry.equalsIgnoreCase("N")) {
+                            System.out.println("증빙자료 없이 제출을 진행합니다.");
+                            return "";
+                        }
+                        System.out.println("Y 또는 N으로 입력하세요.");
+                    }
+                }
+            }
+            System.out.println("Y 또는 N으로 입력하세요.");
+        }
     }
 }

@@ -76,8 +76,9 @@ public class EvaluationRead {
         String anonymousId = extractMetaValue(meta, "anonymousSubmitterId");
         String course = extractMetaValue(meta, "course");
         String team = extractMetaValue(meta, "team");
+        String target = extractMetaValue(meta, "target");
         String submittedAt = extractMetaValue(meta, "submittedAt");
-        String signTarget = anonymousId + "|" + course + "|" + team + "|" + submittedAt + "|" + savedHash;
+        String signTarget = anonymousId + "|" + course + "|" + team + "|" + target + "|" + submittedAt + "|" + savedHash;
 
         boolean signOk = SignatureUtil.verify(signTarget.getBytes(StandardCharsets.UTF_8), signature, studentPubKey);
         System.out.println("[4] 전자서명 검증 (SHA256withRSA)");
