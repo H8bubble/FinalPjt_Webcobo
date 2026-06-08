@@ -27,3 +27,9 @@ bin/
 # 로컬 임시 파일
 *.log
 *.tmp
+
+# 개인 기획 메모 / 대용량 과제 양식 (저장소 비포함)
+project_info.md
+아이디어.md
+*.pdf
+*.hwp
