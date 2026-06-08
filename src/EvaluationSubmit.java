@@ -21,15 +21,24 @@ public class EvaluationSubmit {
         // try-with-resources 로 Scanner 자원을 항상 안전하게 해제
         try (Scanner scanner = new Scanner(System.in)) {
             run(scanner);
-        } catch (GeneralSecurityException | IOException e) {
-            // 사용자에게는 일반화된 메시지만 노출 (내부 경로/스택 정보 비노출)
+        } catch (DuplicateSubmissionException e) {
             System.out.println();
-            System.out.println("제출 처리 중 오류가 발생했습니다: " + e.getClass().getSimpleName());
+            System.out.println("제출 실패: " + e.getMessage());
+            System.out.println("========================================");
+        } catch (GeneralSecurityException e) {
+            System.out.println();
+            System.out.println("암호화 처리 중 오류가 발생했습니다: " + e.getClass().getSimpleName());
+            System.out.println("키 파일이 올바른지 확인하세요.");
+            System.out.println("========================================");
+        } catch (IOException e) {
+            System.out.println();
+            System.out.println("파일 처리 중 오류가 발생했습니다: " + e.getMessage());
+            System.out.println("파일 경로 또는 저장 권한을 확인하세요.");
             System.out.println("========================================");
         }
     }
 
-    private static void run(Scanner scanner) throws GeneralSecurityException, IOException {
+    private static void run(Scanner scanner) throws GeneralSecurityException, IOException, DuplicateSubmissionException {
         System.out.println("========================================");
         System.out.println(" 전자봉투 기반 익명 동료평가 제출 시스템");
         System.out.println(" [학생 제출 모드]");
@@ -47,27 +56,22 @@ public class EvaluationSubmit {
         System.out.println("익명 제출 ID 생성: " + anonymousId);
         System.out.println();
 
-        System.out.print("과목명 입력: ");
-        String course = scanner.nextLine().trim();
+        String course = readRequiredText(scanner, "과목명 입력: ");
         String team = readDigits(scanner, "팀 번호 입력: ");
-        System.out.print("평가 대상자 입력: ");
-        String target = scanner.nextLine().trim();
+        String target = readRequiredText(scanner, "평가 대상자 입력: ");
         if (isAlreadySubmitted(studentId, course, team, target)) {
-            System.out.println();
-            System.out.println("이미 해당 대상자에 대한 평가를 제출했습니다.");
-            System.out.println("중복 제출은 허용되지 않습니다.");
-            System.out.println("========================================");
-            return;
+        	throw new DuplicateSubmissionException("이미 해당 대상자에 대한 평가를 제출했습니다. 중복 제출은 허용되지 않습니다.");
         }
 
         int score = readScore(scanner); // 1~5 범위 정수 검증
-        System.out.print("서술형 평가 입력: ");
-        String comment = scanner.nextLine();
+        String comment = readRequiredText(scanner, "서술형 평가 입력: ");
+        
         String evidence = readEvidenceFileName(scanner);
-
+        
         Date now = new Date();
         String submittedAt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(now);
         String submitNo = new SimpleDateFormat("yyyyMMddHHmmss").format(now);
+        
         System.out.println("제출 시간: " + submittedAt);
         System.out.println("제출 번호: " + submitNo);
         System.out.println();
@@ -87,7 +91,7 @@ public class EvaluationSubmit {
 
         System.out.println("[1] 평가 패키지 생성 완료");
         System.out.println();
-
+        
         // 3. AES 키 생성
         SecretKey aesKey = CryptoUtil.generateAESKey();
         System.out.println("[2] AES 대칭키 생성 완료");
@@ -139,13 +143,13 @@ public class EvaluationSubmit {
         System.out.println(" - 제출 번호: " + submitNo);
         System.out.println(" - evaluation_" + submitNo + ".enc / envelope_professor_" + submitNo + ".bin");
         System.out.println(" - hash_" + submitNo + ".txt / signature_" + submitNo + ".bin");
-        System.out.println(" - submit_meta_" + submitNo + ".txt / student_public_" + submitNo + ".key");
+        System.out.println(" - submit_meta_" + submitNo + ".txt");
         System.out.println();
         System.out.println("평가 제출이 완료되었습니다. (교수자만 열람 가능)");
         System.out.println("========================================");
     }
-
-    // 숫자만 허용하는 입력 (학번, 팀 번호)
+    
+	// 숫자만 허용하는 입력 (학번, 팀 번호)
     private static String readDigits(Scanner scanner, String prompt) {
         while (true) {
             System.out.print(prompt);
@@ -154,6 +158,19 @@ public class EvaluationSubmit {
                 return value;
             }
             System.out.println(" -> 숫자만 입력하세요.");
+        }
+    }
+    
+    // 필수 입력 확인 (빈 문자열 확인)
+    private static String readRequiredText(Scanner scanner, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String value = scanner.nextLine().trim();
+
+            if (!value.isEmpty()) {
+                return value;
+            }
+            System.out.println(" -> 필수 입력 항목입니다. 다시 입력하세요.");
         }
     }
 
@@ -219,7 +236,6 @@ public class EvaluationSubmit {
 				oldContent += "\n";
 			}
 		}
-		
 		FileUtil.saveString(SUBMIT_RECORD_FILE, oldContent + newRecord.trim());
 	}
     
@@ -249,11 +265,10 @@ public class EvaluationSubmit {
                 }
             }
         }
-
         return false;
     }
     
-    // 증빙자료 제출 여부와 파일 존재 여부 확인
+    // 증빙 자료 제출 여부와 파일 존재 여부 확인
     private static String readEvidenceFileName(Scanner scanner) {
         while (true) {
             System.out.print("증빙자료를 제출하시겠습니까? (Y/N): ");
@@ -261,7 +276,7 @@ public class EvaluationSubmit {
 
             if (answer.equalsIgnoreCase("N")) {
                 System.out.println("증빙자료 없이 제출을 진행합니다.");
-                return "";
+                return "없음";
             }
 
             if (answer.equalsIgnoreCase("Y")) {
@@ -287,13 +302,20 @@ public class EvaluationSubmit {
                         }
                         if (retry.equalsIgnoreCase("N")) {
                             System.out.println("증빙자료 없이 제출을 진행합니다.");
-                            return "";
+                            return "없음";
                         }
                         System.out.println("Y 또는 N으로 입력하세요.");
                     }
                 }
             }
             System.out.println("Y 또는 N으로 입력하세요.");
+        }
+    }
+    
+    // 사용자 정의 예외: 중복 제출
+    static class DuplicateSubmissionException extends Exception {
+        public DuplicateSubmissionException(String message) {
+            super(message);
         }
     }
 }
