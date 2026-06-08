@@ -15,6 +15,7 @@
 hash_*.txt
 submit_meta_*.txt
 evaluation_*.txt
+submitted_record.txt
 
 # Eclipse / IDE
 .classpath
